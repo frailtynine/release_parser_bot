@@ -2,6 +2,7 @@ import requests
 import re
 from datetime import datetime, timedelta
 from typing import Optional
+import asyncio
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -65,6 +66,15 @@ async def parse_sg_releases():
                 article_response.text,
                 features='html.parser'
             )
+            # TODO: refactor to helper function
+            date = article_soup.find('span', attrs={'class': 'date'})
+            date_object = datetime.strptime(
+                date.text, 
+                "%B %d, %Y"
+            )
+            next_friday = await get_friday_date()
+            if date_object < next_friday - timedelta(days=7):
+                return [('__Stereogum has no releases for this week', 'come later')]
             p_tag = article_soup.find(
                 lambda tag: tag.name == 'p'
                 and 'Other albums of note out this week:' in tag.text
@@ -96,3 +106,12 @@ def combine_lists(
     merged_list = set(data1 + data2)
     sorted_list = sorted(merged_list, key=lambda x: x[0])
     return sorted_list
+
+# Testing purposes 
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    cos_releases = loop.run_until_complete(parse_cos_releases())
+    sg_releases = loop.run_until_complete(parse_sg_releases())
+    merged_list = combine_lists(cos_releases, sg_releases)
+    for item in merged_list:
+        print(f'{item[0].title()} — {item[1].title()}')
