@@ -107,11 +107,11 @@ def combine_lists(
     sorted_list = sorted(merged_list, key=lambda x: x[0])
     return sorted_list
 
-# Testing purposes 
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    cos_releases = loop.run_until_complete(parse_cos_releases())
-    sg_releases = loop.run_until_complete(parse_sg_releases())
-    merged_list = combine_lists(cos_releases, sg_releases)
-    for item in merged_list:
-        print(f'{item[0].title()} — {item[1].title()}')
+# # Testing purposes 
+# if __name__ == '__main__':
+#     loop = asyncio.get_event_loop()
+#     cos_releases = loop.run_until_complete(parse_cos_releases())
+#     sg_releases = loop.run_until_complete(parse_sg_releases())
+#     merged_list = combine_lists(cos_releases, sg_releases)
+#     for item in merged_list:
+#         print(f'{item[0].title()} — {item[1].title()}')
