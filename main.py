@@ -16,20 +16,24 @@ BOT_TOKEN = os.getenv('BOT_ID')
 
 
 async def parse_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    message = await get_message()
-    await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text=message
-    )
+    messages = await get_message()
+    for message in messages:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=message
+        )
 
 
 async def get_message():
     cos_releases = await parse_cos_releases()
     sg_releases = await parse_sg_releases()
     merged_list = combine_lists(cos_releases, sg_releases)
-    result = ''
+    result = []
     for item in merged_list:
-        result += f'{item[0].title()} - {item[1].title()} \n'
+        if not result or len(result[-1]) >= 4000:
+            result.append(f'{item[0].title()} - {item[1].title()} \n')
+        else:
+            result[-1] += f'{item[0].title()} - {item[1].title()} \n'
     return result
 
 
