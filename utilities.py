@@ -17,7 +17,7 @@ COS_URL = 'https://consequence.net/upcoming-releases/'
 SG_URL = 'https://www.stereogum.com/category/album-of-the-week/'
 
 
-async def get_friday_date() -> datetime:
+def get_friday_date() -> datetime:
     next_friday = datetime.now()
     while next_friday.weekday() != FRIDAY_DATETIME:
         next_friday += timedelta(days=1)
@@ -27,7 +27,7 @@ async def get_friday_date() -> datetime:
 # TODO: refactor album parsing part to a helper function
 async def parse_cos_releases() -> list[tuple[str, str]]:
     async with aiohttp.ClientSession() as session:
-        next_friday: datetime = await get_friday_date()
+        next_friday: datetime = get_friday_date()
         after_next_friday: datetime = (
             next_friday + timedelta(days=7)
         ).strftime('%B %d')
@@ -72,7 +72,7 @@ async def parse_sg_releases():
                 date.text, 
                 "%B %d, %Y"
             )
-            next_friday = await get_friday_date()
+            next_friday = get_friday_date()
             if date_object < next_friday - timedelta(days=7):
                 return [('__Stereogum has no releases for this week', 'come later')]
             p_tag = article_soup.find(
@@ -107,11 +107,11 @@ def combine_lists(
     sorted_list = sorted(merged_list, key=lambda x: x[0])
     return sorted_list
 
-# Testing purposes 
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    cos_releases = loop.run_until_complete(parse_cos_releases())
-    sg_releases = loop.run_until_complete(parse_sg_releases())
-    merged_list = combine_lists(cos_releases, sg_releases)
-    for item in merged_list:
-        print(f'{item[0].title()} — {item[1].title()}')
+# # Testing purposes 
+# if __name__ == '__main__':
+#     loop = asyncio.get_event_loop()
+#     cos_releases = loop.run_until_complete(parse_cos_releases())
+#     sg_releases = loop.run_until_complete(parse_sg_releases())
+#     merged_list = combine_lists(cos_releases, sg_releases)
+#     for item in merged_list:
+#         print(f'{item[0].title()} — {item[1].title()}')
