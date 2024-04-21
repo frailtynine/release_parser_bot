@@ -28,9 +28,11 @@ def get_friday_date() -> datetime:
 async def parse_cos_releases() -> list[tuple[str, str]]:
     async with aiohttp.ClientSession() as session:
         next_friday: datetime = get_friday_date()
-        after_next_friday: datetime = (
+        after_next_friday = (
             next_friday + timedelta(days=7)
         ).strftime('%B %d')
+        after_next_friday = str(after_next_friday).replace(' 0', ' ')
+        print(after_next_friday)
         async with session.get(COS_URL) as response:
             if response.status != 200:
                 return [('Consequence of Sound doesn\'t respond', '')]
