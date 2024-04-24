@@ -30,7 +30,7 @@ async def get_message():
     merged_list = combine_lists(cos_releases, sg_releases)
     result = []
     for item in merged_list:
-        if not result or len(result[-1]) >= 4000:
+        if not result or len(result[-1]) >= 3500:
             result.append(f'{item[0].title()} - {item[1].title()} \n')
         else:
             result[-1] += f'{item[0].title()} - {item[1].title()} \n'
