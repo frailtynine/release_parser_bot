@@ -13,6 +13,7 @@ from utilities import (
 dotenv.load_dotenv()
 
 BOT_TOKEN = os.getenv('BOT_ID')
+MAX_MESSAGE_LENGTH = 3500
 
 
 async def parse_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -30,7 +31,7 @@ async def get_message():
     merged_list = combine_lists(cos_releases, sg_releases)
     result = []
     for item in merged_list:
-        if not result or len(result[-1]) >= 3500:
+        if not result or len(result[-1]) >= MAX_MESSAGE_LENGTH:
             result.append(f'{item[0].title()} - {item[1].title()} \n')
         else:
             result[-1] += f'{item[0].title()} - {item[1].title()} \n'

@@ -31,6 +31,7 @@ async def parse_cos_releases() -> list[tuple[str, str]]:
         after_next_friday = (
             next_friday + timedelta(days=7)
         ).strftime('%B %d')
+        next_friday = str(next_friday.strftime('%B %d')).replace(' 0', ' ')
         after_next_friday = str(after_next_friday).replace(' 0', ' ')
         async with session.get(COS_URL) as response:
             if response.status != 200:
@@ -39,7 +40,7 @@ async def parse_cos_releases() -> list[tuple[str, str]]:
             soup = BeautifulSoup(response_text, features='html.parser')
             friday_tag = soup.find(
                 'p',
-                string=lambda t: t and next_friday.strftime('%B %d') in t)
+                string=lambda t: t and next_friday in t)
             records = []
             for tag in friday_tag.find_next_siblings():
                 if tag.name == 'p' and after_next_friday in tag.get_text():
