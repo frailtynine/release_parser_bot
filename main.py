@@ -2,7 +2,7 @@ import os
 import atexit
 import logging
 from difflib import SequenceMatcher
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from telegram import Update
 from telegram.ext import (
@@ -11,7 +11,7 @@ from telegram.ext import (
     ContextTypes,
     MessageHandler,
     PicklePersistence,
-    filters
+    filters,
 )
 import dotenv
 
@@ -42,6 +42,16 @@ def cleanup():
 
 
 async def parse_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    last_parse = context.application.bot_data.get('last_parse_time')
+    current_time = datetime.now()
+    if last_parse and (current_time - last_parse) < timedelta(minutes=5):
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Подожди пять минут, а. Уже спрашивали."
+        )
+        return
+    context.application.bot_data['last_parse_time'] = current_time
+
     releases = await get_message()
     releases = releases.get_releases(title=True)
     message = ''
@@ -71,10 +81,9 @@ async def get_message():
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info("Received message from user: %s", update.effective_user.id)
     if (
-        update.message.text
+        update.message
         and update.message.from_user.id != context.bot.id
-        and update.message
-        and update.effective_chat.title == "albumsweekly"
+        and update.message.text
     ):
         for mm_text in MM_TEXTS:
             match = SequenceMatcher(
@@ -102,7 +111,9 @@ def main():
     persistence = PicklePersistence(filepath='bot_data.pickle')
     app = Application.builder().token(
         BOT_TOKEN
-    ).persistence(persistence).build()
+    ).persistence(
+        persistence
+    ).build()
     app.add_handler(CommandHandler('parse', parse_handler))
     app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND,
