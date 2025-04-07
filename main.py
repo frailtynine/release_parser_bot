@@ -1,7 +1,6 @@
 import os
 import atexit
 import logging
-from difflib import SequenceMatcher
 from datetime import datetime, timedelta
 
 from telegram import Update
@@ -86,21 +85,21 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         and update.message.text
     ):
         for mm_text in MM_TEXTS:
-            match = SequenceMatcher(
-                None,
-                mm_text,
-                update.message.text.lower()
-            ).ratio() >= 0.85
-            if match:
+            if mm_text in update.message.text.lower():
                 mm_days = context.application.bot_data.get('mm_days')
-                logger.info(mm_days)
+                mm_overall = context.application.bot_data.get('mm_overall', 0)
                 if not mm_days:
                     context.application.bot_data['mm_days'] = datetime.now()
                 else:
                     days_passed = datetime.now() - mm_days
+                    context.application.bot_data['mm_overall'] = mm_overall + 1
                     await context.bot.send_message(
                         chat_id=update.effective_chat.id,
-                        text=f"{days_passed.days}{MM_TEXT}"
+                        text=(
+                            f"{days_passed.days}{MM_TEXT}"
+                            f"\n\nВсего упоминаний Modest Mouse: "
+                            f"{mm_overall + 1}"
+                        )
                     )
                     context.application.bot_data['mm_days'] = datetime.now()
 
