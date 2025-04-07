@@ -101,7 +101,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             f"{mm_overall + 1}"
                         )
                     )
-                    context.application.bot_data['mm_days'] = datetime.now()              
+                    context.application.bot_data['mm_days'] = datetime.now()        
 
 
 def main():
