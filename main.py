@@ -50,7 +50,10 @@ async def parse_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
     context.application.bot_data['last_parse_time'] = current_time
-
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Парсю релизы, подожди немного..."
+    )
     releases = await get_message()
     releases = releases.get_releases(title=True)
     message = ''
@@ -101,7 +104,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             f"{mm_overall + 1}"
                         )
                     )
-                    context.application.bot_data['mm_days'] = datetime.now()        
+                    context.application.bot_data['mm_days'] = datetime.now()
 
 
 def main():
