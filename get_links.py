@@ -35,11 +35,11 @@ def get_releases(
     data = response.json()
 
     return MusicLinksResponse(
-        spotify_url=data.get('spotify_url'),
-        apple_music_url=data.get('apple_music_url'),
-        deezer_url=data.get('deezer_url'),
-        tidal_url=data.get('tidal_url'),
-        image_url=data.get('image_url'),
-        album_name=data.get('album_name'),
-        artist_name=data.get('artist_name')
+        spotify_url=data.get('spotifyUrl'),
+        apple_music_url=data.get('appleMusicUrl'),
+        deezer_url=data.get('deezerUrl'),
+        tidal_url=data.get('tidalUrl'),
+        image_url=data.get('imageUrl'),
+        album_name=data.get('albumName'),
+        artist_name=data.get('artistName')
     )

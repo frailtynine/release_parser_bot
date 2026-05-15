@@ -156,7 +156,7 @@ async def spotify_links_handler(
 
         caption = (
             f'{release_links.artist_name} — {release_links.album_name}\n\n'
-            + '\n'.join(streaming_links)
+            + '\n\n'.join(streaming_links)
         )
         response = requests.get(release_links.image_url, timeout=10)
         response.raise_for_status()
