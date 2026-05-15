@@ -21,7 +21,7 @@ def get_releases(
     ) -> MusicLinksResponse:
     api_url = 'https://albumsweekly.com/links/get_links'
     params = {
-        'spotify_url': spotify_url,
+        'spotifyUrl': spotify_url,
     }
     headers = {
         'Authorization': f'Bearer {musiclink_key}'
@@ -33,6 +33,7 @@ def get_releases(
             f"{response.text}"
         )
     data = response.json()
+
     return MusicLinksResponse(
         spotify_url=data.get('spotify_url'),
         apple_music_url=data.get('apple_music_url'),

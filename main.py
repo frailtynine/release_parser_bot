@@ -4,6 +4,8 @@ import atexit
 import asyncio
 import logging
 from datetime import datetime, timedelta
+from io import BytesIO
+import requests
 
 from telegram import Update
 from telegram.ext import (
@@ -135,6 +137,7 @@ async def spotify_links_handler(
             spotify_url,
             MUSIKLINK_KEY
         )
+        logger.info(release_links)
         streaming_links = [
             f'Spotify: {release_links.spotify_url}',
         ]
@@ -155,10 +158,15 @@ async def spotify_links_handler(
             f'{release_links.artist_name} — {release_links.album_name}\n\n'
             + '\n'.join(streaming_links)
         )
+        response = requests.get(release_links.image_url, timeout=10)
+        response.raise_for_status()
+ 
+        photo = BytesIO(response.content)
+        photo.name = "cover.jpg"
 
         await context.bot.send_photo(
             chat_id=update.effective_chat.id,
-            photo=release_links.image_url,
+            photo=photo,
             caption=caption
         )
 
