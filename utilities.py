@@ -186,3 +186,7 @@ if __name__ == '__main__':
     sg_releases = loop.run_until_complete(parse_sg_releases())
     merged_list = combine_lists(cos_releases, sg_releases)
     print(merged_list.get_releases(title=True))
+
+
+
+    

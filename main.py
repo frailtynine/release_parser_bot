@@ -1,5 +1,7 @@
 import os
+import re
 import atexit
+import asyncio
 import logging
 from datetime import datetime, timedelta
 
@@ -20,6 +22,7 @@ from utilities import (
     parse_cos_releases
 )
 from consts import MM_TEXTS
+from get_links import get_releases
 
 dotenv.load_dotenv()
 
@@ -30,8 +33,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 BOT_TOKEN = os.getenv('BOT_ID')
+MUSIKLINK_KEY = os.getenv('MUSICLINK_KEY')
 MAX_MESSAGE_LENGTH = 3500
 MM_TEXT = ': столько дней мы продержались, не упоминая Modest Mouse.'
+SPOTIFY_URL_PATTERN = r'https?://open\.spotify\.com/[^\s]+'
 
 
 def cleanup():
@@ -107,6 +112,57 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     context.application.bot_data['mm_days'] = datetime.now()
 
 
+async def spotify_links_handler(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+    if (
+        not update.message
+        or update.message.from_user.id == context.bot.id
+        or not update.message.text
+    ):
+        return
+
+    spotify_urls = [
+        url.rstrip('.,!?)]>')
+        for url in re.findall(SPOTIFY_URL_PATTERN, update.message.text)
+    ]
+    unique_spotify_urls = list(dict.fromkeys(spotify_urls))
+
+    for spotify_url in unique_spotify_urls:
+        release_links = await asyncio.to_thread(
+            get_releases,
+            spotify_url,
+            MUSIKLINK_KEY
+        )
+        streaming_links = [
+            f'Spotify: {release_links.spotify_url}',
+        ]
+        if release_links.apple_music_url:
+            streaming_links.append(
+                f'Apple Music: {release_links.apple_music_url}'
+            )
+        if release_links.deezer_url:
+            streaming_links.append(
+                f'Deezer: {release_links.deezer_url}'
+            )
+        if release_links.tidal_url:
+            streaming_links.append(
+                f'Tidal: {release_links.tidal_url}'
+            )
+
+        caption = (
+            f'{release_links.artist_name} — {release_links.album_name}\n\n'
+            + '\n'.join(streaming_links)
+        )
+
+        await context.bot.send_photo(
+            chat_id=update.effective_chat.id,
+            photo=release_links.image_url,
+            caption=caption
+        )
+
+
 def main():
     logger.info("Starting bot...")
     atexit.register(cleanup)
@@ -118,9 +174,13 @@ def main():
     ).build()
     app.add_handler(CommandHandler('parse', parse_handler))
     app.add_handler(MessageHandler(
+        filters.TEXT & ~filters.COMMAND & filters.Regex(SPOTIFY_URL_PATTERN),
+        spotify_links_handler
+    ))
+    app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND,
         message_handler
-    ))
+    ), group=1)
     app.run_polling(allowed_updates=Update.ALL_TYPES)
     logger.info("Bot is now polling for updates.")
 
