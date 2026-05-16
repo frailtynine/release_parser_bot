@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 import requests
-import os
-from dotenv import load_dotenv
 
 
 @dataclass
@@ -16,12 +14,12 @@ class MusicLinksResponse():
 
 
 def get_releases(
-        spotify_url: str,
-        musiclink_key: str,
-    ) -> MusicLinksResponse:
+    url: str,
+    musiclink_key: str,
+) -> MusicLinksResponse:
     api_url = 'https://albumsweekly.com/links/get_links'
     params = {
-        'spotifyUrl': spotify_url,
+        'url': url,
     }
     headers = {
         'Authorization': f'Bearer {musiclink_key}'

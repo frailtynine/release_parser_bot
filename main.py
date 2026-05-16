@@ -38,7 +38,9 @@ BOT_TOKEN = os.getenv('BOT_ID')
 MUSIKLINK_KEY = os.getenv('MUSICLINK_KEY')
 MAX_MESSAGE_LENGTH = 3500
 MM_TEXT = ': столько дней мы продержались, не упоминая Modest Mouse.'
-SPOTIFY_URL_PATTERN = r'https?://open\.spotify\.com/[^\s]+'
+RELEASE_LINK_URL_PATTERN = (
+    r'https?://(?:open\.spotify\.com|(?:[\w-]+\.)?bandcamp\.com)/[^\s]+'
+)
 
 
 def cleanup():
@@ -114,7 +116,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     context.application.bot_data['mm_days'] = datetime.now()
 
 
-async def spotify_links_handler(
+async def release_links_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
@@ -125,16 +127,16 @@ async def spotify_links_handler(
     ):
         return
 
-    spotify_urls = [
+    release_urls = [
         url.rstrip('.,!?)]>')
-        for url in re.findall(SPOTIFY_URL_PATTERN, update.message.text)
+        for url in re.findall(RELEASE_LINK_URL_PATTERN, update.message.text)
     ]
-    unique_spotify_urls = list(dict.fromkeys(spotify_urls))
+    unique_release_urls = list(dict.fromkeys(release_urls))
 
-    for spotify_url in unique_spotify_urls:
+    for release_url in unique_release_urls:
         release_links = await asyncio.to_thread(
             get_releases,
-            spotify_url,
+            release_url,
             MUSIKLINK_KEY
         )
         logger.info(release_links)
@@ -182,8 +184,8 @@ def main():
     ).build()
     app.add_handler(CommandHandler('parse', parse_handler))
     app.add_handler(MessageHandler(
-        filters.TEXT & ~filters.COMMAND & filters.Regex(SPOTIFY_URL_PATTERN),
-        spotify_links_handler
+        filters.TEXT & ~filters.COMMAND & filters.Regex(RELEASE_LINK_URL_PATTERN),
+        release_links_handler
     ))
     app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND,
